@@ -1,3 +1,4 @@
+require 'byebug'
 class KnightPathFinder
 
     ALLMOVES = [
@@ -12,7 +13,8 @@ class KnightPathFinder
 
     def initialize(startingpos)
         @root_node = startingpos
-     #   self.build_move_tree
+        @considered_positions = [startingpos]
+       self.build_move_tree
     end
 
     def self.valid_moves(pos)
@@ -25,4 +27,21 @@ class KnightPathFinder
         x, y = pos
         x.between?(0, 7) && y.between?(0, 7)
     end
+
+    def new_move_positions(pos)
+       
+        valid_moves = KnightPathFinder.valid_moves(pos) 
+        real_valid_moves = valid_moves.reject {|move| @considered_positions.include?(move)}
+        @considered_positions.concat(real_valid_moves)
+        real_valid_moves
+    end
+
+    def build_move_tree
+        
+    end
+
 end
+
+kpf = KnightPathFinder.new([1,2])
+p kpf.new_move_positions([1,2])
+p kpf.new_move_positions([1,2])
