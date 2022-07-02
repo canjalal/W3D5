@@ -1,7 +1,8 @@
 require 'byebug'
 require_relative "polytreenode.rb"
+require_relative "node.rb"
+require_relative "stackandqueue.rb"
 class KnightPathFinder
-    attr_reader :thetree
 
     ALLMOVES = [
         [1, 2],
@@ -17,6 +18,7 @@ class KnightPathFinder
         @root_node = PolyTreeNode.new(startingpos)
         @considered_positions = [startingpos]
         self.build_move_tree
+        return true
     end
 
     def self.valid_moves(pos)
@@ -39,33 +41,76 @@ class KnightPathFinder
     end
 
     def build_move_tree
-        queue = [@root_node] 
-        while(queue.length > 0)
-            node = queue.shift
+        queue = MyQueue.new
+        queue.enqueue(@root_node) 
+        while(queue.size > 0)
+            node = queue.dequeue
             childpositions = self.new_move_positions(node.value)
             nodechildren = childpositions.map {|pos| PolyTreeNode.new(pos)}
             nodechildren.each do |child|
                 node.add_child(child)
             end
-            queue.concat(nodechildren)
+
+            nodechildren.each {|child| queue.enqueue(child)}
+            # queue.concat(nodechildren)
         end
 
-        return @root_node
+        return true
+        # return @root_node
         
     end
 
     def printbfs
-        queue = []
-        queue << @root_node
-        while(queue.length > 0)
-            node = queue.shift
+        queue = MyQueue.new
+        queue.enqueue(@root_node)
+        while(queue.size > 0)
+            node = queue.dequeue
             p node.value
-            queue.concat(node.children)
+            node.children.each {|child| queue.enqueue(child)}
         end
         nil
     end
 
+    def bfs(pos)
+        queue = MyQueue.new
+        queue.enqueue(@root_node)
+        while(queue.size > 0)
+            node = queue.dequeue
+            return node if node.value == pos
+            node.children.each {|child| queue.enqueue(child)}
+        end
+        nil
+    end
+
+    def tracepathback(endnode)
+        nodepath = MyStack.new
+        currnode = endnode
+        until(currnode.nil?)
+            nodepath.push(currnode)
+            currnode = currnode.parent
+        end
+        patharray = []
+        puts "Path from #{@root_node.value} to #{endnode.value}:"
+        while(nodepath.size > 0)
+            patharray << nodepath.pop.value
+            p patharray[-1]
+        end
+        patharray
+    end
+
+    def findpath(pos)
+        endnode = bfs(pos)
+        if(!endnode.nil?)
+            tracepathback(endnode)
+        end
+    end
+
+    def inspect # what .new returns, also used by p
+        self.root_node.value
+    end
+private
+attr_accessor :considered_positions
 end
 
-kpf = KnightPathFinder.new([1,2])
-kpf.printbfs
+# kpf = KnightPathFinder.new([1,2])
+# kpf.printbfs
